@@ -10,9 +10,25 @@ class WeaponController extends Controller
 {
     public function index()
     {
+        $search = request()->query('search');   
+            $perPage = request()->query('perPage', 10);
+            $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
+
+            $weapons = Weapon::query();
+
+            if ($search) {
+                $weapons->where('name', 'ilike', '%' . $search . '%');
+            }
+
+        $weapons = $weapons->orderBy('name')->paginate($perPage);
+    
         return Inertia::render('Master/Weapon/Index', [
-            'weapons' => Weapon::all(),
-            'error' => session('error'),
+                'weapons' => $weapons,
+                'filters' => [
+                    'search' => $search,
+                    'perPage' => $perPage,
+                ],  
+                'error' => session('error'),
         ]);
     }
 

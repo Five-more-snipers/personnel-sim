@@ -10,10 +10,26 @@ class FactionController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Master/Faction/Index', [
-            'factions' => Faction::all(),
-            'error' => session('error'),
-        ]);
+            $search = request()->query('search');   
+            $perPage = request()->query('perPage', 10);
+            $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
+
+            $factions = Faction::query();
+
+            if ($search) {
+                $factions->where('name', 'ilike', '%' . $search . '%');
+            }
+
+            $factions = $factions->orderBy('name')->paginate($perPage);
+    
+            return Inertia::render('Master/Faction/Index', [
+                'factions' => $factions,
+                'filters' => [
+                    'search' => $search,
+                    'perPage' => $perPage,
+                ],  
+                'error' => session('error'),
+            ]);
     }
 
     public function create()

@@ -1,121 +1,85 @@
-# Onboarding untuk Junior Developer
+# Onboarding - Personnel Simulation System
 
-Dokumen ini menjelaskan konsep-konsep dasar Laravel, Vue.js, dan PostgreSQL dengan menggunakan project Personnel-SIM sebagai contoh nyata.
-
----
-
-## MEMAHAMI ARSITEKTUR PROJECT
-
-### Bagaimana Data Mengalir dalam Project ini
-
-```
-User klik tombol/Link
-       ↓
-Browser mengirim request (URL)
-       ↓
-[ROUTES] Mencocokkan URL dengan fungsi di Controller
-       ↓
-[CONTROLLER] Menjalankan logic, mengambil data dari database
-       ↓
-[MODEL + ELOQUENT] Berkomunikasi dengan PostgreSQL
-       ↓
-[INERTIA] Mengirim data ke Vue.js dalam format JSON
-       ↓
-[VUE] Menampilkan halaman ke user
-```
+Dokumen ini menjelaskan arsitektur dan konsep dasar project Personnel-SIM untuk developer baru.
 
 ---
 
-## 1. POSTGRESQL - DATABASE
+## Overview Sistem
 
-### Apa itu PostgreSQL?
-PostgreSQL adalah sistem database management (RDBMS) yang menyimpan data secara terstruktur dalam tabel-tabel.
-
-### Konsep Dasar PostgreSQL
-
-| Konsep | Penjelasan |
-|-------|-----------|
-| **Tabel** | Kumpulan data seperti spreadsheet. Setiap kolom = jenis data, setiap baris = 1 record |
-| **Kolom/Field** | Jenis data tertentu (contoh: name, level) |
-| **Baris/Record** | 1 data lengkap (contoh: 1 personel) |
-| **Primary Key** | Kolom ID unik untuk mengidentifikasi setiap baris |
-| **Foreign Key** | Kolom yang menghubungkan ke tabel lain (relasi) |
-
-### Contoh Tabel dalam Project ini
-
-**Tabel `personnels` (tabel utama)**
-```sql
-id         -- Primary Key (angka unik)
-name       -- Nama prajurit
-faction_id -- Foreign Key ke tabel factions
-rank_id    -- Foreign Key ke tabel ranks
-unit_class_id -- Foreign Key ke tabel unit_classes
-weapon_id  -- Foreign Key ke tabel weapons
-created_at -- Timestamp otomatis
-updated_at -- Timestamp otomatis
-```
-
-**Tabel-tabelmaster (`factions`, `ranks`, dll)**
-```sql
-id         -- Primary Key
-name       -- Nama jenisnya
-level      -- (hanya di ranks) urutan pangkat
-type       -- (hanya di weapons) kategori senjata
-created_at -- Timestamp
-updated_at -- Timestamp
-```
-
-### Kenapa Ada Tabel Master?
-- **Menghindari duplikasi data** - Tidak perlu mengetik "Kopassus" berkali-kali
-- **Mudah update** - Jika nama berubah, cukup ubah di tabel master
-- **Data konsisten** - User memilih dari daftar yang sudah ada
+Project ini adalah aplikasi web full-stack untuk mengelola data personel militer. User dapat:
+- Melihat dan mencari daftar personnel
+- Menambah/edit/hapus personnel
+- Mengelola master data (faction, rank, unit class, weapon)
 
 ---
 
-## 2. LARAVEL - BACKEND FRAMEWORK
+## Arsitektur Data Flow
 
-Laravel adalah framework PHP untuk membangun aplikasi web. Dalam project ini, Laravel menangani:
-- Mengurus database (melalui Eloquent)
-- Menerima request dari browser
-- Mengirim response ke Vue.js
+```
+User klik link/button
+        ↓
+Browser (GET/POST/PUT/DELETE request)
+        ↓
+[ROUTES] Cocokkan URL dengan Controller
+        ↓
+[CONTROLLER] Eksekusi logic, query database
+        ↓
+[MODEL + ELOQUENT] Komunikasi dengan PostgreSQL
+        ↓
+[INERTIA] Kirim data ke Vue dalam format JSON
+        ↓
+[VUE] Render halaman ke user
+```
 
-### A. MIGRATION - MEMBUAT TABLE
+---
 
-Migration adalah cara membuat tabel database dengan kode PHP (bukan SQL langsung).
+## 1. DATABASE - PostgreSQL
 
+### Schema Tabel
+
+**personnels (tabel utama)**
 ```php
 // database/migrations/2026_04_16_130523_create_personnels_table.php
-
 Schema::create('personnels', function (Blueprint $table) {
     $table->id();                    // Primary Key auto-increment
-    $table->string('name');           // Kolom text pendek
-    $table->string('callsign')->nullable(); // Optional (bisa kosong)
+    $table->string('name');           // Nama personel
+    $table->string('callsign')->nullable(); // Callsign (opsional)
     
-    // foreignID membuat kolom + foreign key constraint
+    // Foreign Key dengan constraint
     $table->foreignID('faction_id')->constrained('factions')->onDelete('restrict');
     $table->foreignID('rank_id')->constrained('ranks')->onDelete('restrict');
-    $table->foreignID('weapon_id')->constrained('weapons')->onDelete('restrict');
     $table->foreignID('unit_class_id')->constrained('unit_classes')->onDelete('restrict');
+    $table->foreignID('weapon_id')->constrained('weapons')->onDelete('restrict');
     
-    $table->timestamps();              // created_at & updated_at otomatis
+    $table->timestamps();             // created_at & updated_at otomatis
 });
 ```
 
 **Penjelasan:**
-- `->constrained('factions')` - Laravel otomatis melihat tabel `factions` dan kolom `id`
-- `->onDelete('restrict')` - Tidak bisa hapus faction jika masih ada personnel
-- `$table->timestamps()` - Laravel otomatis mengisi kolom `created_at` dan `updated_at`
+- `constrained('factions')` - Laravel otomatis lihat tabel dan primary key
+- `onDelete('restrict')` - Tidak bisa hapus jika masih ada personnel
 
-### B. MODEL - REPRESENTASI TABLE
+**Master Tables**
+| Tabel | Kolom |
+|-------|------|
+| factions | id, name |
+| ranks | id, name, level |
+| unit_classes | id, name |
+| weapons | id, name, type |
 
-Model adalah class PHP yang merepresentasikan 1 tabel. Model memungkinkan kita mengelola data dengan kode PHP (bukan SQL langsung).
+---
+
+## 2. LARAVEL - Backend
+
+### A. Model (app/Models/)
+
+Model adalah class yang merepresentasikan 1 tabel.
 
 ```php
 // app/Models/Personnel.php
-
 class Personnel extends Model
 {
-    // $fillable: kolom mana yang boleh diisi lewat form
+    // $fillable: kolom yang boleh diisi via form
     protected $fillable = [
         'name',
         'faction_id',
@@ -124,136 +88,102 @@ class Personnel extends Model
         'weapon_id',
     ];
     
-    // Relasi ke tabel lain
-    public function faction()
-    {
+    // Relasi ke tabel master
+    public function faction() {
         return $this->belongsTo(Faction::class);
     }
     
-    public function rank()
-    {
+    public function rank() {
         return $this->belongsTo(Rank::class);
     }
     
-    public function unitClass()
-    {
+    public function unitClass() {
         return $this->belongsTo(UnitClass::class);
     }
     
-    public function weapon()
-    {
+    public function weapon() {
         return $this->belongsTo(Weapon::class);
     }
 }
 ```
 
-**Kenapa pakai `$fillable`?**
-- Laravel melindungi dari mass assignment attack
-- Hanya kolom yang ditulis di `$fillable` bisa diubah lewat form
-
-### C. ELOQUENT - QUERY DATABASE
-
-Eloquent adalah ORM (Object-Relational Mapping) bawaan Laravel. Jadi, daripada menulis SQL:
-
-```sql
-SELECT * FROM personnels WHERE id = 1
-```
-
-Kita bisa menulis PHP:
-```php
-Personnel::find(1);
-```
-
-**Contoh Eloquent dalam Project ini:**
+### B. Eloquent Query Examples
 
 | Kebutuhan | Kode Eloquent |
-|-----------|---------------|
-| Ambil semua data | `Personnel::all()` |
+|-----------|--------------|
+| Ambil semua | `Personnel::all()` |
 | Ambil dengan relasi | `Personnel::with(['faction', 'rank'])->get()` |
-| Urutkan terbaru | `Personnel::latest()->get()` |
-| Cari berdasarkan ID | `Personnel::find($id)` |
-| Buat data baru | `Personnel::create($data)` |
-| Update data | `$personnel->update($data)` |
-| Hapus data | `$personnel->delete()` |
+| Terbaru dulu | `Personnel::latest()->get()` |
+| Dengan pagination | `Personnel::paginate(10)` |
+| Cari nama (case-insensitive) | `Personnel::where('name', 'ilike', '%test%')` |
+| Filter relasi | `$personnels->whereHas('faction', fn($q) => $q->where('name', 'ilike', '%kopassus%'))` |
+| Buat data | `Personnel::create($data)` |
+| Update | `$personnel->update($data)` |
+| Hapus | `$personnel->delete()` |
 
-**Contoh nyata dari PersonnelController.php:**
-```php
-// Mengambil semua personnel beserta data faction, rank, dsb
-$personnels = Personnel::with(['faction', 'rank', 'unitClass', 'weapon'])
-                       ->latest()
-                       ->get();
-
-// Membuat personnel baru dari data form
-Personnel::create($validated);
-```
-
-### D. CONTROLLER - LOGIC HANDLING
-
-Controller menangani request dari user dan menentukan response apa yang dikembalikan.
+### C. Controller (app/Http/Controllers/)
 
 ```php
 // app/Http/Controllers/PersonnelController.php
-
 class PersonnelController extends Controller
 {
-    // 1. MENAMPILKAN DAFTAR
-    public function index()
+    // 1. INDEX - Tampilkan daftar
+    public function index(Request $request)
     {
-        // Ambil data dari database
-        $personnels = Personnel::with(['faction', 'rank', 'unitClass', 'weapon'])
-                               ->latest()
-                               ->get();
+        // Parse query params untuk filtering
+        $search = $request->query('search');
+        $perPage = $request->query('perPage', 10);
         
-        // Kirim ke Vue page "Personnel/Index"
+        $personnels = Personnel::with(['faction', 'rank', 'unitClass', 'weapon']);
+        
+        if ($search) {
+            $personnels->where('name', 'ilike', '%' . $search . '%');
+        }
+        
+        $personnels = $personnels->latest()->paginate($perPage);
+        
+        // Kirim ke Vue dengan Inertia
         return Inertia::render('Personnel/Index', [
-            'personnels' => $personnels
+            'personnels' => $personnels,
+            'filters' => $request->query(),
         ]);
     }
     
-    // 2. MENAMPILKAN FORM TAMBAH
+    // 2. CREATE - Form tambah
     public function create()
     {
-        // Ambil data untuk dropdown
         return Inertia::render('Personnel/Create', [
             'factions' => Faction::select('id', 'name')->get(),
             'ranks' => Rank::select('id', 'name', 'level')->orderBy('level')->get(),
-            'unitClasses' => UnitClass::select('id', 'name')->get(),
-            'weapons' => Weapon::select('id', 'name', 'type')->get(),
+            // ...
         ]);
     }
     
-    // 3. SIMPAN DATA BARU
+    // 3. STORE - Simpan data baru
     public function store(Request $request)
     {
-        // Validasi input dari form
+        // Validasi input
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'faction_id' => 'required|exists:factions,id',
-            'rank_id' => 'required|exists:ranks,id',
-            'unit_class_id' => 'required|exists:unit_classes,id',
-            'weapon_id' => 'required|exists:weapons,id',
+            // ...
         ]);
         
-        // Simpan ke database
         Personnel::create($validated);
         
-        // Redirect ke halaman utama
         return redirect()->route('personnel.index');
     }
     
-    // 4. TAMPILKAN FORM EDIT
+    // 4. EDIT - Form edit
     public function edit(Personnel $personnel)
     {
         return Inertia::render('Personnel/Edit', [
             'personnel' => $personnel,
-            'factions' => Faction::select('id', 'name')->get(),
-            'ranks' => Rank::select('id', 'name', 'level')->get(),
-            'unitClasses' => UnitClass::select('id', 'name')->get(),
-            'weapons' => Weapon::select('id', 'name', 'type')->get(),
+            // data dropdown...
         ]);
     }
     
-    // 5. UPDATE DATA
+    // 5. UPDATE - Update data
     public function update(Request $request, Personnel $personnel)
     {
         $validated = $request->validate([...]);
@@ -261,7 +191,7 @@ class PersonnelController extends Controller
         return redirect()->route('personnel.index');
     }
     
-    // 6. HAPUS DATA
+    // 6. DESTROY - Hapus data
     public function destroy(Personnel $personnel)
     {
         $personnel->delete();
@@ -270,20 +200,16 @@ class PersonnelController extends Controller
 }
 ```
 
-### E. ROUTES - URL MAPPING
-
-Routes mencocokkan URL dengan fungsi di Controller.
+### D. Routes (routes/web.php)
 
 ```php
-// routes/web.php
-
-// Route::resource - Buat 7 route sekaligus untuk master tables
+// Master tables - otomatis生成 7 route per resource
 Route::resource('factions', FactionController::class);
 Route::resource('ranks', RankController::class);
 Route::resource('unit-classes', UnitClassController::class);
 Route::resource('weapons', WeaponController::class);
 
-// Custom routes - Personnel tidak pakai root URL (/) tapi /personnel
+// Personnel - manual routes (karena tidak menggunakan /{id} untuk index)
 Route::get('/', [PersonnelController::class, 'index'])->name('personnel.index');
 Route::get('/personnel/create', [PersonnelController::class, 'create'])->name('personnel.create');
 Route::post('/personnel', [PersonnelController::class, 'store'])->name('personnel.store');
@@ -292,177 +218,157 @@ Route::put('/personnel/{personnel}', [PersonnelController::class, 'update'])->na
 Route::delete('/personnel/{personnel}', [PersonnelController::class, 'destroy'])->name('personnel.destroy');
 ```
 
-**Apa itu Route Resource?**
-Laravel punya helper `Route::resource` yang membuat 7 route sekaligus:
-
-| HTTP Method | URL | Fungsi Controller | Kegunaan |
-|-------------|-----|-------------------|----------|
-| GET | /factions | index() | Tampilkan daftar |
-| GET | /factions/create | create() | Tampilkan form tambah |
-| POST | /factions | store() | Simpan data baru |
-| GET | /factions/{id} | show() | Tampilkan 1 data |
-| GET | /factions/{id}/edit | edit() | Tampilkan form edit |
-| PUT | /factions/{id} | update() | Update data |
-| DELETE | /factions/{id} | destroy() | Hapus data |
-
-**HTTP Methods:**
-- **GET** - Mengambil/menampilkan data
-- **POST** - Mengirim data baru
-- **PUT** - Mengupdate data yang ada
-- **DELETE** - Menghapus data
+**Route::resource generates 7 routes:**
+| Method | URL | Function |
+|--------|-----|----------|
+| GET | /factions | index() |
+| GET | /factions/create | create() |
+| POST | /factions | store() |
+| GET | /factions/{id} | show() |
+| GET | /factions/{id}/edit | edit() |
+| PUT | /factions/{id} | update() |
+| DELETE | /factions/{id} | destroy() |
 
 ---
 
-## 3. INERTIA.JS - BRIDGE LARAVEL-VUE
+## 3. INERTIA.JS - Bridge Laravel-Vue
 
-### Kenapa Pakai Inertia.js?
-Biasanya, Laravel menyediakan API (JSON) lalu Vue mengambil data dengan fetch/axios. twice the work!
-
-Inertia.js menyederhanakan:
-1. Controller mengembalikan HTML tapi pakai Vue components
-2. Vue menerima data props langsung dari Controller
-3. Tidak perlu buat REST API terpisah
+Inertia.js menyederhanakan full-stack开发:
+- Controller return Vue component, bukan JSON
+- Vue terima data sebagai props
+- Tidak perlu buat REST API terpisah
 
 ```php
-// Tanpa Inertia: return harus JSON
-return response()->json(['personnels' => $personnels]);
-
-// Dengan Inertia: return Vue page + data
+// Controller
 return Inertia::render('Personnel/Index', [
     'personnels' => $personnels
 ]);
+
+// Vue (menerima sebagai props)
+defineProps({ personnels: Object })
 ```
 
 ---
 
-## 4. VUE.JS 3 - FRONTEND
+## 4. VUE.JS 3 - Frontend
 
-Vue.js adalah JavaScript framework untuk membuat interactive UI.
-
-### A. COMPOSITION API
-
-Vue 3 punya 2 cara tulis component: Options API dan Composition API. Project ini pakai Composition API.
+### A. Composition API
 
 ```javascript
-// Setup script - cara baru (Composition API)
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
-// Reactive state - bisa perubahan
-const count = ref(0)
+// Reactive state
+const search = ref('')
 
-// Computed - hasil kalkulasi otomatis
-const doubleCount = computed(() => count.value * 2)
+// Computed property
+const filteredData = computed(() => ...)
+
+// Watch perubahan
+watch(search, (newVal) => { ... })
 </script>
 ```
 
-### B. TEMPLATE SYNTAX
+### B. Vue Directives
 
-Vue punya directive khusus untuk HTML:
+| Directive | Usage | Penjelasan |
+|----------|-------|-----------|
+| v-for | `<tr v-for="p in personnels">` | Loop array |
+| v-if | `<div v-if="show">` | Kondisi tampil |
+| v-model | `<input v-model="name">` | Two-way binding |
+| @click | `@click="submit()"` | Event handler |
 
-| Directive | Penjelasan | Contoh |
-|------------|------------|--------|
-| `v-for` | Loop array | `<tr v-for="p in personnels">` |
-| `v-if` | Kondisi tampil | `<div v-if="show">` |
-| `v-model` | Two-way binding | `<input v-model="name">` |
-| `@click` | Event click | `<button @click="save()">` |
+### C. Inertia Components
 
-### C. CONTOH VUE PAGE
-
-**Index.vue (Daftar Personel):**
-```vue
-<template>
-  <AppLayout>
-    <table>
-      <tr v-for="person in personnels" :key="person.id">
-        <td>{{ person.name }}</td>
-        <td>{{ person.faction.name }}</td>  <!-- Dari relasi -->
-        <td>{{ person.rank.name }}</td>
-        <td>
-          <Link :href="`/personnel/${person.id}/edit`">Edit</Link>
-        </td>
-      </tr>
-    </table>
-  </AppLayout>
-</template>
-
-<script setup>
+```javascript
 import { Link, router } from '@inertiajs/vue3'
-import AppLayout from '@/Layouts/AppLayout.vue'
 
-// Terima data dari Laravel Controller
-defineProps({ personnels: Array })
-</script>
+// Link untuk SPA navigation
+<Link href="/personnel/create">Tambah</Link>
+
+// Router untuk programmatic navigation
+router.get('/personnel', { search: 'john' })
+router.post('/personnel', form)
+router.put('/personnel/1', form)
+router.delete('/personnel/1')
+
+// useForm untuk form handling
+import { useForm } from '@inertiajs/vue3'
+const form = useForm({ name: '', faction_id: '' })
+form.post('/personnel')
 ```
 
-**Create.vue (Form Tambah):**
+### D. Contoh Vue Page
+
+**resources/js/Pages/Personnel/Index.vue**
 ```vue
-<template>
-  <form @submit.prevent="submit">
-    <input v-model="form.name" class="form-control" />
-    <select v-model="form.faction_id">
-      <option v-for="f in factions" :value="f.id">{{ f.name }}</option>
-    </select>
-    <button type="submit">Save</button>
-  </form>
-</template>
-
 <script setup>
-import { useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { Link, router } from '@inertiajs/vue3'
 
-defineProps({ factions: Array, ranks: Array, ... })
-
-// useForm - otomatis jadi reactive + handle submit
-const form = useForm({
-  name: '',
-  faction_id: '',
-  rank_id: '',
-  ...
+defineProps({
+    personnels: Object,  // Data dari controller
+    filters: Object,
 })
 
-const submit = () => form.post('/personnel')
+const search = ref('')
+
+const applyFilters = () => {
+    router.get('/', { search: search.value }, { preserveState: true })
+}
 </script>
+
+<template>
+    <AppLayout>
+        <div class="container">
+            <h2>Active Personnel Roster</h2>
+            
+            <!-- Search -->
+            <input v-model="search" @input="applyFilters" placeholder="Search..." />
+            
+            <!-- Table -->
+            <table class="table">
+                <tr v-for="person in personnels.data" :key="person.id">
+                    <td>{{ person.name }}</td>
+                    <td>{{ person.faction?.name }}</td>  <!-- Dari relasi -->
+                    <td>
+                        <Link :href="`/personnel/${person.id}/edit`">Edit</Link>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </AppLayout>
+</template>
 ```
-
-### D. INERTIA.HJS SPECIAL COMPONENTS
-
-Inertia menyediakan component khusus:
-
-| Component | Penjelasan |
-|-----------|-------------|
-| `<Link>` | Anchor yang SPA-friendly (tidak reload page) |
-| `router` | Programmatic navigation |
-| `useForm()` | Form handling dengan validation |
 
 ---
 
-## 5. BOOTSTRAP 5 - STYLING
+## 5. BOOTSTRAP 5 - Styling
 
-Bootstrap adalah CSS framework untuk cepat styling.
-
-### CONTOH CLASSES
+### Class Penting
 
 ```html
-<!-- Layout -->
+<!-- Container -->
 <div class="container py-4">
 
-<!-- Button -->
-<button class="btn btn-primary">Simpan</button>
-<button class="btn btn-secondary">Batal</button>
+<!-- Buttons -->
+<button class="btn btn-primary">Primary</button>
+<button class="btn btn-secondary">Secondary</button>
+<button class="btn btn-outline-danger">Outline Danger</button>
 
 <!-- Form -->
 <input class="form-control" />
 <select class="form-select" />
 
 <!-- Table -->
-<table class="table table-hover">
-  <thead><tr>...</tr></thead>
-  <tbody><tr>...</tr></tbody>
+<table class="table table-hover table-striped">
+    <thead class="table-dark">...</thead>
 </table>
 
-<!-- Alert -->
-<div class="alert alert-danger">Error message</div>
+<!-- Layout -->
+<div class="row">
+    <div class="col-md-3">...</div>
+</div>
 
 <!-- Flex -->
 <div class="d-flex justify-content-between">
@@ -470,114 +376,74 @@ Bootstrap adalah CSS framework untuk cepat styling.
 
 ---
 
-## TAMBAHAN: VALIDATION
+## 6. Validation
 
-Laravel punya validation built-in:
+### Laravel Validation Rules
 
 ```php
 $request->validate([
-    'name' => 'required|string|max:255',      // Wajib, text, max 255 char
-    'faction_id' => 'required|exists:factions,id', // Wajib, harus ada di tabel factions
+    'name' => 'required|string|max:255',
+    'faction_id' => 'required|exists:factions,id',
     'rank_id' => 'required|exists:ranks,id',
+    'weapon_id' => 'required|exists:weapons,id',
 ]);
 ```
 
-**Rule validation yang sering dipakai:**
-- `required` - Wajib isi
-- `string` - Harus text
-- `integer` - Harus angka
-- `max:255` - Maksimal 255 karakter
-- `exists:tabel,kolom` - Nilai harus ada di tabel lain
-- `unique:tabel,kolom` - Tidak boleh sama dengan yang sudah ada
+**Common Rules:**
+| Rule | Penjelasan |
+|------|-----------|
+| required | Wajib isi |
+| string | Harus text |
+| integer | Harus angka |
+| max:255 | Maksimal 255 karakter |
+| exists:tabel,kolom | Nilai harus ada di tabel lain |
+| unique:tabel,kolom | Tidak boleh duplikat |
 
 ---
 
-## RINGKASAN ALUR CRUD
+## Delete Protection
 
-### 1. Tampilkan Daftar (READ)
-```
-GET / atau /factions
-  → Route: index()
-  → Controller: Personnel::with([...])->get()
-  → Model: Eloquent query ke PostgreSQL
-  → Inertia: render('Personnel/Index', ['personnels' => $personnels])
-  → Vue: v-for loop tampilkan tabel
-```
+Setiap master table controller mengecekrelasi sebelum hapus:
 
-### 2. Tambah Data (CREATE)
-```
-GET /personnel/create
-  → Route: create()  
-  → Controller: Ambil data untuk dropdown
-  → Inertia: render('Personnel/Create', [...])
-  → Vue: Form dengan v-model
-
-POST /personnel
-  → Route: store()
-  → Controller: $request->validate() → Model::create()
-  → Redirect ke index
-```
-
-### 3. Edit Data (UPDATE)
-```
-GET /personnel/{id}/edit
-  → Route: edit()
-  → Controller: Ambil data + dropdown
-  → Inertia: render('Personnel/Edit', [...])
-  → Vue: Form dengan data pre-filled
-
-PUT /personnel/{id}
-  → Route: update()
-  → Controller: validate() → $personnel->update()
-  → Redirect ke index
-```
-
-### 4. Hapus Data (DELETE)
-```
-DELETE /personnel/{id}
-  → Route: destroy()
-  → Controller: $personnel->delete()
-  → Redirect ke index
+```php
+// FactionController.php
+public function destroy(Faction $faction)
+{
+    // Cek apakah masih ada personnel yang pakai faction ini
+    if ($faction->personnels()->exists()) {
+        return redirect()->route('factions.index')
+            ->with('error', 'Cannot delete this faction because it is still being used by personnel.');
+    }
+    $faction->delete();
+    return redirect()->route('factions.index');
+}
 ```
 
 ---
 
-## TOOLS PENTING
+## File Penting untuk Dipelajari
+
+| Lokasi | Tujuan |
+|--------|--------|
+| `routes/web.php` | Semua URL routing |
+| `app/Http/Controllers/PersonnelController.php` | Logic utama personnel |
+| `app/Models/Personnel.php` | Model dan relasi |
+| `database/migrations/*` | Schema database |
+| `resources/js/Pages/Personnel/Index.vue` | Halaman utama |
+| `resources/js/Layouts/AppLayout.vue` | Layout utama |
+
+---
+
+## Commands useful
 
 ```bash
 # Laravel
-php artisan serve          # Jalankan server lokal
-php artisan migrate       # Buat/update tabel
-php artisan make:model NamaModel
-php artisan make:controller NamaController
-php artisan make:migration create_nama_table
-php artisan route:list    # Lihat semua routes
+php artisan serve          # Jalankan server
+php artisan migrate     # Buat/update tabel
+php artisan route:list   # Lihat semua routes
+php artisan db:seed      # Seed database
 
-# npm (Vue/Vite)
-npm install              # Install dependencies
-npm run dev            # Development server
-npm run build          # Build untuk production
+# Vue/Vite
+npm run dev            # Dev server
+npm run build          # Build production
 ```
-
----
-
-## FILE PENTING UNTUK DIPELAJARI
-
-| File | Tujuan |
-|------|---------|
-| `routes/web.php` | Semua URL dan mapping ke controller |
-| `app/Http/Controllers/*` | Logic handling |
-| `app/Models/*` | Definisi model dan relasi |
-| `database/migrations/*` | Schema tabel |
-| `resources/js/Pages/*` | Vue pages |
-| `resources/js/Layouts/AppLayout.vue` | Layout utama |
-| `resources/js/app.js` | Entry point Vue |
-
----
-
-## LANGKAH BELAJAR LANJUTAN
-
-1. **Buat fitur baru**: Coba tambah field `phone` ke tabel personnel
-2. **Tambah validasi**: Coba tambahkan validasi unique untuk name
-3. **Search**: Coba tambahkan fitur search di Index.vue
-4. **Pagination**: Jangan tampilkan semua, tapi per halaman

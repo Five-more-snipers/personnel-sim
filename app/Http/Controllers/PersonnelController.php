@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use App\Models\Personnel;
 use App\Models\Faction;
+use App\Models\Personnel;
 use App\Models\Rank;
 use App\Models\UnitClass;
 use App\Models\Weapon;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PersonnelController extends Controller
 {
@@ -17,23 +17,48 @@ class PersonnelController extends Controller
      */
     public function index(Request $request)
     {
-        //Fungsi Search
         $search = $request->query('search');
+        $factionFilter = $request->query('faction');
+        $unitClassFilter = $request->query('unit_class');
+        $rankFilter = $request->query('rank');
+        $perPage = $request->query('perPage', 10);
+        $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
+
         $personnels = Personnel::with(['faction', 'rank', 'unitClass', 'weapon']);
 
-        //Keyword Search Filternya
         if ($search) {
-            $personnels->where('name', 'ilike', '%' . $search . '%');
+            $personnels->where('name', 'ilike', '%'.$search.'%');
         }
 
-        $personnels = $personnels->latest()->get();
+        if ($factionFilter) {
+            $personnels->whereHas('faction', function ($q) use ($factionFilter) {
+                $q->where('name', 'ilike', '%'.$factionFilter.'%');
+            });
+        }
 
+        if ($unitClassFilter) {
+            $personnels->whereHas('unitClass', function ($q) use ($unitClassFilter) {
+                $q->where('name', 'ilike', '%'.$unitClassFilter.'%');
+            });
+        }
+
+        if ($rankFilter) {
+            $personnels->whereHas('rank', function ($q) use ($rankFilter) {
+                $q->where('name', 'ilike', '%'.$rankFilter.'%');
+            });
+        }
+
+        $personnels = $personnels->latest()->paginate($perPage);
 
         return Inertia::render('Personnel/Index', [
             'personnels' => $personnels,
             'filters' => [
                 'search' => $search,
-            ], // Mengirim data personel dan filter pencarian ke view
+                'faction' => $factionFilter,
+                'unit_class' => $unitClassFilter,
+                'rank' => $rankFilter,
+                'perPage' => $perPage,
+            ],
         ]);
     }
 
@@ -66,7 +91,7 @@ class PersonnelController extends Controller
         Personnel::create($validated);
 
         // Redirect kembali ke tabel index
-        return redirect()->route('personnel.index'); 
+        return redirect()->route('personnel.index');
     }
 
     public function edit(Personnel $personnel)
@@ -95,7 +120,7 @@ class PersonnelController extends Controller
 
         $personnel->update($validated);
 
-        return redirect()->route('personnel.index'); 
+        return redirect()->route('personnel.index');
     }
 
     /**
@@ -104,7 +129,7 @@ class PersonnelController extends Controller
     public function destroy(Personnel $personnel)
     {
         $personnel->delete();
-        
+
         return redirect()->route('personnel.index');
     }
 }
