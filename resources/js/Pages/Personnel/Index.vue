@@ -1,10 +1,18 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 defineProps({
-    personnels: Array
+    personnels: Array,
+    filters: Object //Untuk load existing search query saat halaman dimuat ulang
 });
+
+//Fungsi Search
+const search = ref('');
+const performSearch = () => {
+    router.get('/', { search: search.value }, { preserveState: true});
+};
 
 // Fungsi untuk konfirmasi keamanan sebelum menghapus personel
 const dischargePersonnel = (id) => {
@@ -21,7 +29,21 @@ const dischargePersonnel = (id) => {
                 <h2 class="fw-bold">Active Personnel Roster</h2>
                 <Link href="/personnel/create" class="btn btn-primary">+ Deploy New</Link>
             </div>
-
+            <!-- Tempat masang Search di Viewlist -->
+            <div class="mb-3">
+                <input
+                    v-model="search"
+                    type="text"
+                    class="form-control mb-3"
+                    placeholder="Search personnel name..."
+                />
+                <button @click="performSearch"
+                    class="btn btn-primary"
+                    type="button">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+            
             <div class="card shadow-sm border-0">
                 <div class="card-body p-0">
                     <table class="table table-hover table-striped mb-0 text-center align-middle">

@@ -6,7 +6,8 @@ import { Link } from '@inertiajs/vue3';
     <div>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
             <div class="container">
-                <Link href="/" class="navbar-brand fw-bold">🎖️ Personnel Sim</Link>
+                <Link href="/" class="navbar-brand fw-bold">
+                    <i class="bi bi-globe"></i> Personnel Sim</Link>
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">

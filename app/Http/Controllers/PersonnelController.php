@@ -15,14 +15,25 @@ class PersonnelController extends Controller
     /**
      * Menampilkan halaman utama (Tabel Daftar Personel)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $personnels = Personnel::with(['faction', 'rank', 'unitClass', 'weapon'])
-                               ->latest()
-                               ->get();
+        //Fungsi Search
+        $search = $request->query('search');
+        $personnels = Personnel::with(['faction', 'rank', 'unitClass', 'weapon']);
+
+        //Keyword Search Filternya
+        if ($search) {
+            $personnels->where('name', 'ilike', '%' . $search . '%');
+        }
+
+        $personnels = $personnels->latest()->get();
+
 
         return Inertia::render('Personnel/Index', [
-            'personnels' => $personnels
+            'personnels' => $personnels,
+            'filters' => [
+                'search' => $search,
+            ], // Mengirim data personel dan filter pencarian ke view
         ]);
     }
 
