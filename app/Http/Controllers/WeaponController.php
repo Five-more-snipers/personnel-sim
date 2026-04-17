@@ -23,7 +23,10 @@ class WeaponController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+        ]);
         Weapon::create($validated);
 
         return redirect()->route('weapons.index');
@@ -36,7 +39,10 @@ class WeaponController extends Controller
 
     public function update(Request $request, Weapon $weapon)
     {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+        ]);
         $weapon->update($validated);
 
         return redirect()->route('weapons.index');

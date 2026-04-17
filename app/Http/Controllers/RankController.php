@@ -23,8 +23,22 @@ class RankController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'level' => 'required|integer|min:1',
+        ]);
         Rank::create($validated);
+
+        return redirect()->route('ranks.index');
+    }
+
+    public function update(Request $request, Rank $rank)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'level' => 'required|integer|min:1',
+        ]);
+        $rank->update($validated);
 
         return redirect()->route('ranks.index');
     }
@@ -32,14 +46,6 @@ class RankController extends Controller
     public function edit(Rank $rank)
     {
         return Inertia::render('Master/Rank/Edit', ['rank' => $rank]);
-    }
-
-    public function update(Request $request, Rank $rank)
-    {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
-        $rank->update($validated);
-
-        return redirect()->route('ranks.index');
     }
 
     public function destroy(Rank $rank)

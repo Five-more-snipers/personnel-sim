@@ -7,6 +7,10 @@
           <label class="form-label">Name</label>
           <input v-model="form.name" type="text" class="form-control" required />
         </div>
+        <div class="mb-3">
+          <label class="form-label">Level</label>
+          <input v-model="form.level" type="number" class="form-control" required min="1" />
+        </div>
         <div class="d-flex gap-2">
           <button type="submit" class="btn btn-primary">Save</button>
           <Link href="/ranks" class="btn btn-secondary">Cancel</Link>
@@ -20,7 +24,7 @@
 import { Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
-const form = useForm({ name: '' })
+const form = useForm({ name: '', level: 1 })
 
 const submit = () => {
   form.post('/ranks', {

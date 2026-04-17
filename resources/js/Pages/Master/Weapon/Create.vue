@@ -7,6 +7,10 @@
           <label class="form-label">Name</label>
           <input v-model="form.name" type="text" class="form-control" required />
         </div>
+        <div class="mb-3">
+          <label class="form-label">Type</label>
+          <input v-model="form.type" type="text" class="form-control" required />
+        </div>
         <div class="d-flex gap-2">
           <button type="submit" class="btn btn-primary">Save</button>
           <Link href="/weapons" class="btn btn-secondary">Cancel</Link>
@@ -20,7 +24,7 @@
 import { Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
-const form = useForm({ name: '' })
+const form = useForm({ name: '', type: '' })
 
 const submit = () => {
   form.post('/weapons', {
