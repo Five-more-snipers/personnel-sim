@@ -6,11 +6,13 @@ use App\Http\Controllers\FactionController;
 use App\Http\Controllers\RankController;
 use App\Http\Controllers\UnitClassController;
 use App\Http\Controllers\WeaponController;
+use App\Http\Controllers\SubGroupController;
 
 Route::resource('factions', FactionController::class);
 Route::resource('ranks', RankController::class);
 Route::resource('unit-classes', UnitClassController::class);
 Route::resource('weapons', WeaponController::class);
+Route::resource('sub-groups', SubGroupController::class);
 
 // URL Utama langsung mengarah ke Tabel Daftar Personel
 Route::get('/', [PersonnelController::class, 'index'])->name('personnel.index');
@@ -29,3 +31,7 @@ Route::put('/personnel/{personnel}', [PersonnelController::class, 'update'])->na
 
 // Endpoint Delete Data
 Route::delete('/personnel/{personnel}', [PersonnelController::class, 'destroy'])->name('personnel.destroy');
+
+//Lihat Detail Personel
+Route::get('/personnel/{personnel}', [PersonnelController::class, 'show'])->name('personnel.show');
+

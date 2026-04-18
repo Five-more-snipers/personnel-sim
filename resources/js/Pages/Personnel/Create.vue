@@ -1,9 +1,10 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-
+import { computed, ref, watch } from 'vue';
 const props = defineProps({
     factions: Array,
+    subGroups: Array,
     ranks: Array,
     unitClasses: Array,
     weapons: Array,
@@ -11,7 +12,9 @@ const props = defineProps({
 
 const form = useForm({
     name: '',
+    biography: '',
     faction_id: '',
+    sub_group_id: '',
     rank_id: '',
     unit_class_id: '',
     weapon_id: '',
@@ -20,6 +23,16 @@ const form = useForm({
 const submit = () => {
     form.post('/personnel');
 };
+
+const subGroups = computed(() => props.subGroups || []);
+const filteredSubGroups = computed(() => {
+    if (!form.faction_id) return [];
+    return subGroups.value.filter(subGroup => subGroup.faction_id === form.faction_id);
+});
+watch(() => form.faction_id, () => {
+    form.sub_group_id = '';
+}); 
+
 </script>
 
 <template>
@@ -49,7 +62,17 @@ const submit = () => {
                                             </option>
                                         </select>
                                     </div>
-
+                                    
+                                    <div class="col-md-6">  <!-- TAMBAHIN INI -->
+                                        <label class="form-label fw-bold">SubGroup</label>
+                                        <select v-model="form.sub_group_id" class="form-select">
+                                            <option :value="null">None</option>
+                                            <option v-for="sg in filteredSubGroups" :key="sg.id" :value="sg.id">
+                                                {{ sg.name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold">Rank</label>
                                         <select v-model="form.rank_id" class="form-select" required>
@@ -77,10 +100,16 @@ const submit = () => {
                                         <select v-model="form.weapon_id" class="form-select" required>
                                             <option disabled value="">Select Weapon...</option>
                                             <option v-for="weapon in weapons" :key="weapon.id" :value="weapon.id">
-                                                {{ weapon.name }} ({{ weapon.type }})
+                                                {{ weapon.name }}
                                             </option>
                                         </select>
                                     </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Biography</label>
+                                    <textarea v-model="form.biography" class="form-control" rows="5" 
+                                    placeholder="Enter personnel biography..."></textarea>
                                 </div>
 
                                 <div class="d-grid mt-4">

@@ -12,10 +12,12 @@ class Personnel extends Model
     // 1. Membuka gerbang agar form bisa menyimpan data ke kolom-kolom ini
     protected $fillable = [
         'name',
+        'biography',
         'faction_id',
         'rank_id',
         'unit_class_id',
         'weapon_id',
+        'sub_group_id',
     ];
 
     // 2. Mendefinisikan Relasi ke Tabel Master (Agar Index.vue bisa membaca nama)
@@ -38,5 +40,9 @@ class Personnel extends Model
     public function weapon()
     {
         return $this->belongsTo(Weapon::class);
+    }
+    public function subGroup() // Relasi ke SubGroup
+    {
+        return $this->belongsTo(SubGroup::class);
     }
 }

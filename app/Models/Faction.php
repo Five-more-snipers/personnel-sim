@@ -16,4 +16,8 @@ class Faction extends Model
     {
         return $this->hasMany(Personnel::class);
     }
+    // Relasi dengan SubGroup: Satu Faction memiliki banyak SubGroup
+    public function subGroups(){
+        return $this->hasMany(SubGroup::class);
+    }
 }

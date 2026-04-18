@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Faction;
 use App\Models\Personnel;
 use App\Models\Rank;
+use App\Models\SubGroup;
 use App\Models\UnitClass;
-use App\Models\Weapon;
+use App\Models\Weapon; // Import model SubGroup
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,11 +21,11 @@ class PersonnelController extends Controller
         $search = $request->query('search');
         $factionFilter = $request->query('faction');
         $unitClassFilter = $request->query('unit_class');
-        $rankFilter = $request->query('rank');
+        $subGroupFilter = $request->query('sub_group');
         $perPage = $request->query('perPage', 10);
         $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
 
-        $personnels = Personnel::with(['faction', 'rank', 'unitClass', 'weapon']);
+        $personnels = Personnel::with(['faction', 'subGroup', 'rank', 'unitClass', 'weapon']);
 
         if ($search) {
             $personnels->where('name', 'ilike', '%'.$search.'%');
@@ -42,9 +43,9 @@ class PersonnelController extends Controller
             });
         }
 
-        if ($rankFilter) {
-            $personnels->whereHas('rank', function ($q) use ($rankFilter) {
-                $q->where('name', 'ilike', '%'.$rankFilter.'%');
+        if ($subGroupFilter) {
+            $personnels->whereHas('subGroup', function ($q) use ($subGroupFilter) {
+                $q->where('name', 'ilike', '%'.$subGroupFilter.'%');
             });
         }
 
@@ -56,7 +57,7 @@ class PersonnelController extends Controller
                 'search' => $search,
                 'faction' => $factionFilter,
                 'unit_class' => $unitClassFilter,
-                'rank' => $rankFilter,
+                'sub_group' => $subGroupFilter,
                 'perPage' => $perPage,
             ],
         ]);
@@ -72,6 +73,7 @@ class PersonnelController extends Controller
             'ranks' => Rank::select('id', 'name', 'level')->orderBy('level')->get(),
             'unitClasses' => UnitClass::select('id', 'name')->get(),
             'weapons' => Weapon::select('id', 'name', 'type')->get(),
+            'subGroups' => SubGroup::select('id', 'name', 'faction_id')->get(),
         ]);
     }
 
@@ -82,10 +84,12 @@ class PersonnelController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'biography' => 'nullable|string',
             'faction_id' => 'required|exists:factions,id',
             'rank_id' => 'required|exists:ranks,id',
             'unit_class_id' => 'required|exists:unit_classes,id',
             'weapon_id' => 'required|exists:weapons,id',
+            'sub_group_id' => 'nullable|exists:sub_groups,id',
         ]);
 
         Personnel::create($validated);
@@ -102,6 +106,7 @@ class PersonnelController extends Controller
             'ranks' => Rank::select('id', 'name', 'level')->orderBy('level')->get(),
             'unitClasses' => UnitClass::select('id', 'name')->get(),
             'weapons' => Weapon::select('id', 'name', 'type')->get(),
+            'subGroups' => SubGroup::select('id', 'name', 'faction_id')->get(),
         ]);
     }
 
@@ -112,10 +117,12 @@ class PersonnelController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'biography' => 'nullable|string',
             'faction_id' => 'required|exists:factions,id',
             'rank_id' => 'required|exists:ranks,id',
             'unit_class_id' => 'required|exists:unit_classes,id',
             'weapon_id' => 'required|exists:weapons,id',
+            'sub_group_id' => 'nullable|exists:sub_groups,id',
         ]);
 
         $personnel->update($validated);
@@ -131,5 +138,15 @@ class PersonnelController extends Controller
         $personnel->delete();
 
         return redirect()->route('personnel.index');
+    }
+
+    /**
+     * Menampilkan detail personel
+     */
+    public function show(Personnel $personnel)
+    {
+        return Inertia::render('Personnel/Show', [
+            'personnel' => $personnel->load(['faction', 'subGroup', 'rank', 'unitClass', 'weapon']),
+        ]);
     }
 }

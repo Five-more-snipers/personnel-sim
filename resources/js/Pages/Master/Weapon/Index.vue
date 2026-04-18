@@ -17,6 +17,8 @@
   });
 
   const search = ref(props.filters.search || '');
+  const categoryFilter = ref(props.filters.category || '');
+
   watch(search, (newValue) => {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
@@ -24,8 +26,15 @@
       }, 500);
   });
 
+  watch(categoryFilter, () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+          performSearch();
+      }, 500);
+  });
+
   const performSearch = () => {
-      router.get('/weapons', { search: search.value, perPage: perPage.value }, { preserveState: true });
+      router.get('/weapons', { search: search.value, category: categoryFilter.value, perPage: perPage.value }, { preserveState: true });
   };
 
   const deleteWeapon = (id) => {
@@ -43,15 +52,24 @@
         <Link href="/weapons/create" class="btn btn-primary">+ Add Weapon</Link>
       </div>
       <div class="mb-3">
-          <input
-              v-model="search"
-              type="text"
-              class="form-control mb-3"
-              placeholder="Search weapon name..."
-          />
-          <button @click="performSearch" class="btn btn-primary" type="button">
-              <i class="bi bi-search"></i> Search
-          </button>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <input
+                  v-model="search"
+                  type="text"
+                  class="form-control"
+                  placeholder="Search weapon name..."
+              />
+            </div>
+            <div class="col-md-3">
+                <input v-model="categoryFilter" type="text" class="form-control" placeholder="Filter by category..." />
+            </div>
+            <div class="col-md-2">
+                <button @click="performSearch" class="btn btn-primary w-100" type="button">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+          </div>
       </div>
       <!-- Error Alert -->
       <div v-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -66,7 +84,8 @@
               <tr>
                 <th class="text-start">ID</th>
                 <th class="text-start">Name</th>
-                <th class="text-start">Type</th>
+                <th>Category</th>
+                <th>Description</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -74,14 +93,15 @@
               <tr v-for="weapon in weapons.data" :key="weapon.id">
                 <td class="text-start">{{ weapon.id }}</td>
                 <td class="text-start">{{ weapon.name }}</td>
-                <td class="text-start">{{ weapon.type }}</td>
+                <td>{{ weapon.category || '-' }}</td>
+                <td>{{ weapon.description || '-' }}</td>
                 <td>
                   <Link :href="`/weapons/${weapon.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
                   <button @click="deleteWeapon(weapon.id)" class="btn btn-sm btn-outline-danger">Delete</button>
                 </td>
               </tr>
               <tr v-if="weapons.data.length === 0">
-                <td colspan="4" class="text-center py-4 text-muted">No weapons found.</td>
+                <td colspan="5" class="text-center py-4 text-muted">No weapons found.</td>
               </tr>
             </tbody>
           </table>

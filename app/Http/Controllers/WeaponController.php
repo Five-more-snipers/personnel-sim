@@ -10,25 +10,31 @@ class WeaponController extends Controller
 {
     public function index()
     {
-        $search = request()->query('search');   
-            $perPage = request()->query('perPage', 10);
-            $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
+        $search = request()->query('search');
+        $categoryFilter = request()->query('category');
+        $perPage = request()->query('perPage', 10);
+        $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
 
-            $weapons = Weapon::query();
+        $weapons = Weapon::query();
 
-            if ($search) {
-                $weapons->where('name', 'ilike', '%' . $search . '%');
-            }
+        if ($search) {
+            $weapons->where('name', 'ilike', '%' . $search . '%');
+        }
+
+        if ($categoryFilter) {
+            $weapons->where('category', 'ilike', '%' . $categoryFilter . '%');
+        }
 
         $weapons = $weapons->orderBy('name')->paginate($perPage);
-    
+
         return Inertia::render('Master/Weapon/Index', [
-                'weapons' => $weapons,
-                'filters' => [
-                    'search' => $search,
-                    'perPage' => $perPage,
-                ],  
-                'error' => session('error'),
+            'weapons' => $weapons,
+            'filters' => [
+                'search' => $search,
+                'category' => $categoryFilter,
+                'perPage' => $perPage,
+            ],
+            'error' => session('error'),
         ]);
     }
 
@@ -41,8 +47,10 @@ class WeaponController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
         ]);
+
         Weapon::create($validated);
 
         return redirect()->route('weapons.index');
@@ -57,8 +65,10 @@ class WeaponController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
         ]);
+
         $weapon->update($validated);
 
         return redirect()->route('weapons.index');

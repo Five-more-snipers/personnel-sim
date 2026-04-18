@@ -23,6 +23,7 @@ import { Link } from '@inertiajs/vue3';
                             </a>
                             <ul class="dropdown-menu shadow-sm">
                                 <li><Link href="/factions" class="dropdown-item">Factions</Link></li>
+                                <li><Link href="/sub-groups" class="dropdown-item">Sub Groups</Link></li>
                                 <li><Link href="/ranks" class="dropdown-item">Ranks</Link></li>
                                 <li><Link href="/unit-classes" class="dropdown-item">Unit Classes</Link></li>
                                 <li><Link href="/weapons" class="dropdown-item">Weapons</Link></li>

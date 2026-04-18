@@ -14,7 +14,7 @@ const searchTimeout = ref(null);
 const search = ref(props.filters.search || '');
 const factionFilter = ref(props.filters.faction || '');
 const unitClassFilter = ref(props.filters.unit_class || '');
-const rankFilter = ref(props.filters.rank || '');
+const subGroupFilter = ref(props.filters.sub_group || '');
 const perPage = ref(props.filters.perPage || 10);
 
 // Debounced search for name field
@@ -26,7 +26,7 @@ watch(search, (newValue) => {
 });
 
 // Watch all text filters with debounce
-watch([factionFilter, unitClassFilter, rankFilter], () => {
+watch([factionFilter, unitClassFilter, subGroupFilter], () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         applyFilters();
@@ -38,7 +38,7 @@ const applyFilters = () => {
         search: search.value,
         faction: factionFilter.value,
         unit_class: unitClassFilter.value,
-        rank: rankFilter.value,
+        sub_group: subGroupFilter.value,
         perPage: perPage.value
     }, { preserveState: true });
 };
@@ -91,12 +91,12 @@ const dischargePersonnel = (id) => {
                     />
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Rank</label>
+                    <label class="form-label">SubGroup</label>
                     <input
-                        v-model="rankFilter"
+                        v-model="subGroupFilter"
                         type="text"
                         class="form-control"
-                        placeholder="Filter by rank..."
+                        placeholder="Filter by subgroup..."
                     />
                 </div>
                 <div class="col-md-1">
@@ -109,25 +109,31 @@ const dischargePersonnel = (id) => {
             
             <div class="card shadow-sm border-0">
                 <div class="card-body p-0">
+                    <div class="table-responsive">
                     <table class="table table-hover table-striped mb-0 text-center align-middle">
                         <thead class="table-dark">
                             <tr>
-                                <th class="text-start">Callsign</th>
-                                <th>Faction</th>
-                                <th>Rank</th>
-                                <th>Class</th>
-                                <th>Primary Weapon</th>
-                                <th>Actions</th>
+                                <th class="text-start" style="width: 15%;">Callsign</th>
+                                <th style="width: 12%;">Faction</th>
+                                <th style="width: 12%;">Sub Group</th>
+                                <th style="width: 10%;">Rank</th>
+                                <th style="width: 12%;">Class</th>
+                                <th style="width: 15%;">Primary Weapon</th>
+                                <th style="width: 15%;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="person in personnels.data" :key="person.id">
                                 <td class="fw-bold text-start">{{ person.name }}</td>
                                 <td>{{ person.faction?.name }}</td>
+                                <td>{{ person.sub_group?.name }}</td>
                                 <td>{{ person.rank?.name }}</td>
                                 <td>{{ person.unit_class?.name }}</td>
                                 <td>{{ person.weapon?.name }}</td>
                                 <td>
+                                    <Link :href="`/personnel/${person.id}`" class="btn btn-sm btn-outline-info me-2">
+                                        View
+                                    </Link>
                                     <Link :href="`/personnel/${person.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">
                                         Edit
                                     </Link>
@@ -137,10 +143,11 @@ const dischargePersonnel = (id) => {
                                 </td>
                             </tr>
                             <tr v-if="personnels.data.length === 0">
-                                <td colspan="6" class="text-center py-4 text-muted">No personnel deployed yet.</td>
+                                <td colspan="7" class="text-center py-4 text-muted">No personnel deployed yet.</td>
                             </tr>
                         </tbody>
                     </table> <!-- CLOSE TABLE HERE -->
+                    </div>
                     
                     <!-- Pagination Controls -->
                     <div class="d-flex justify-content-between align-items-center mt-3 px-3 py-2 bg-light">

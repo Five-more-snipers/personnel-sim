@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Weapon extends Model
+class SubGroup extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'description'];
+    protected $fillable = ['name', 'faction_id'];
 
+    public function faction()
+    {
+        return $this->belongsTo(Faction::class);
+    }
     public function personnels()
     {
         return $this->hasMany(Personnel::class);
