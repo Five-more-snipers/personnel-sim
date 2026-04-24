@@ -10,26 +10,33 @@ class FactionController extends Controller
 {
     public function index()
     {
-            $search = request()->query('search');   
-            $perPage = request()->query('perPage', 10);
-            $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
+        $search = request()->query('search');
+        $perPage = request()->query('perPage', 10);
+        $perPage = in_array($perPage, [10, 25, 50]) ? $perPage : 10;
 
-            $factions = Faction::query();
+        $factions = Faction::query();
 
-            if ($search) {
-                $factions->where('name', 'ilike', '%' . $search . '%');
-            }
+        if ($search) {
+            $factions->where('name', 'ilike', '%'.$search.'%');
+        }
 
-            $factions = $factions->orderBy('name')->paginate($perPage);
-    
-            return Inertia::render('Master/Faction/Index', [
-                'factions' => $factions,
-                'filters' => [
-                    'search' => $search,
-                    'perPage' => $perPage,
-                ],  
-                'error' => session('error'),
-            ]);
+        $factions = $factions->withCount(['personnels', 'subGroups'])->orderBy('name')->paginate($perPage);
+
+        return Inertia::render('Master/Faction/Index', [
+            'factions' => $factions,
+            'filters' => [
+                'search' => $search,
+                'perPage' => $perPage,
+            ],
+            'error' => session('error'),
+        ]);
+    }
+
+    public function show(Faction $faction)
+    {
+        return Inertia::render('Master/Faction/Show', [
+            'faction' => $faction->loadCount(['personnels', 'subGroups']),
+        ]);
     }
 
     public function create()
@@ -39,7 +46,10 @@ class FactionController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
         Faction::create($validated);
 
         return redirect()->route('factions.index');
@@ -52,7 +62,10 @@ class FactionController extends Controller
 
     public function update(Request $request, Faction $faction)
     {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
         $faction->update($validated);
 
         return redirect()->route('factions.index');

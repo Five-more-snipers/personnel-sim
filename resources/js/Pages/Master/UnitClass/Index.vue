@@ -26,6 +26,7 @@
                 <td class="text-start">{{ unitClass.id }}</td>
                 <td class="text-start">{{ unitClass.name }}</td>
                 <td>
+                  <Link :href="`/unit-classes/${unitClass.id}`" class="btn btn-sm btn-outline-info me-2">View</Link>
                   <Link :href="`/unit-classes/${unitClass.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
                   <button @click="deleteUnitClass(unitClass.id)" class="btn btn-sm btn-outline-danger">Delete</button>
                 </td>

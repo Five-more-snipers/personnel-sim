@@ -88,6 +88,7 @@ const deleteSubGroup = (id) => {
                 <td class="text-start">{{ subGroup.name }}</td>
                 <td>{{ subGroup.faction?.name }}</td>
                 <td>
+                  <Link :href="`/sub-groups/${subGroup.id}`" class="btn btn-sm btn-outline-info me-2">View</Link>
                   <Link :href="`/sub-groups/${subGroup.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
                   <button @click="deleteSubGroup(subGroup.id)" class="btn btn-sm btn-outline-danger">Delete</button>
                 </td>

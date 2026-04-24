@@ -9,15 +9,21 @@ class Faction extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'description'];
+
+    protected $casts = [
+        'description' => 'string',
+    ];
 
     // Relasi balik: Satu Faction memiliki banyak Personnel
     public function personnels()
     {
         return $this->hasMany(Personnel::class);
     }
+
     // Relasi dengan SubGroup: Satu Faction memiliki banyak SubGroup
-    public function subGroups(){
+    public function subGroups()
+    {
         return $this->hasMany(SubGroup::class);
     }
 }

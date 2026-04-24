@@ -72,7 +72,7 @@ class PersonnelController extends Controller
             'factions' => Faction::select('id', 'name')->get(),
             'ranks' => Rank::select('id', 'name', 'level')->orderBy('level')->get(),
             'unitClasses' => UnitClass::select('id', 'name')->get(),
-            'weapons' => Weapon::select('id', 'name', 'type')->get(),
+            'weapons' => Weapon::select('id', 'name', 'category')->get(),
             'subGroups' => SubGroup::select('id', 'name', 'faction_id')->get(),
         ]);
     }
@@ -105,7 +105,7 @@ class PersonnelController extends Controller
             'factions' => Faction::select('id', 'name')->get(),
             'ranks' => Rank::select('id', 'name', 'level')->orderBy('level')->get(),
             'unitClasses' => UnitClass::select('id', 'name')->get(),
-            'weapons' => Weapon::select('id', 'name', 'type')->get(),
+            'weapons' => Weapon::select('id', 'name', 'category')->get(),
             'subGroups' => SubGroup::select('id', 'name', 'faction_id')->get(),
         ]);
     }

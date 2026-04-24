@@ -9,7 +9,11 @@ class UnitClass extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'description'];
+
+    protected $casts = [
+        'description' => 'string',
+    ];
 
     public function personnels()
     {

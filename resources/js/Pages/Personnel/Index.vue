@@ -8,8 +8,6 @@ const props = defineProps({
     filters: Object,
 });
 
-const searchTimeout = ref(null);
-
 // Initialize filters from props (using text filter keys, not ID)
 const search = ref(props.filters.search || '');
 const factionFilter = ref(props.filters.faction || '');
@@ -17,39 +15,56 @@ const unitClassFilter = ref(props.filters.unit_class || '');
 const subGroupFilter = ref(props.filters.sub_group || '');
 const perPage = ref(props.filters.perPage || 10);
 
-// Debounced search for name field
-watch(search, (newValue) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 500);
-});
-
-// Watch all text filters with debounce
-watch([factionFilter, unitClassFilter, subGroupFilter], () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 500);
-});
-
 const applyFilters = () => {
-    router.get('/', {
+    const query = new URLSearchParams({
         search: search.value,
         faction: factionFilter.value,
         unit_class: unitClassFilter.value,
         sub_group: subGroupFilter.value,
-        perPage: perPage.value
-    }, { preserveState: true });
+        perPage: perPage.value,
+    });
+    router.visit(`/?${query.toString()}`, {
+        preserveState: false,
+        preserveScroll: false,
+    });
+};
+
+const goToPage = (page) => {
+    const query = new URLSearchParams({
+        search: search.value,
+        faction: factionFilter.value,
+        unit_class: unitClassFilter.value,
+        sub_group: subGroupFilter.value,
+        perPage: perPage.value,
+        page: page,
+    });
+    router.visit(`/?${query.toString()}`, {
+        preserveState: false,
+        preserveScroll: false,
+    });
 };
 
 watch(perPage, () => {
-    applyFilters();
+    const query = new URLSearchParams({
+        search: search.value,
+        faction: factionFilter.value,
+        unit_class: unitClassFilter.value,
+        sub_group: subGroupFilter.value,
+        perPage: perPage.value,
+        page: 1,
+    });
+    router.visit(`/?${query.toString()}`, {
+        preserveState: false,
+        preserveScroll: false,
+    });
 });
 
 const dischargePersonnel = (id) => {
     if (confirm('Are you sure you want to discharge this personnel? This action is irreversible.')) {
-        router.delete(`/personnel/${id}`);
+        router.delete(`/personnel/${id}`, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     }
 };
 </script>
@@ -164,7 +179,7 @@ const dischargePersonnel = (id) => {
                         </div>
                         <div>
                             <button
-                                @click="router.get(personnels.prev_page_url, {search: search, perPage}, {preserveState: true})"
+                                @click="goToPage(personnels.current_page - 1)"
                                 :disabled="!personnels.prev_page_url"
                                 class="btn btn-sm btn-outline-secondary">
                                 Previous
@@ -173,7 +188,7 @@ const dischargePersonnel = (id) => {
                                 Page {{ personnels.current_page }} of {{ personnels.last_page }}
                             </span>
                             <button
-                                @click="router.get(personnels.next_page_url, {search: search, perPage}, {preserveState: true})"
+                                @click="goToPage(personnels.current_page + 1)"
                                 :disabled="!personnels.next_page_url"
                                 class="btn btn-sm btn-outline-secondary">
                                 Next

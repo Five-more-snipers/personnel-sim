@@ -9,7 +9,11 @@ class Rank extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'level'];
+    protected $fillable = ['name', 'level', 'description'];
+
+    protected $casts = [
+        'description' => 'string',
+    ];
 
     public function personnels()
     {

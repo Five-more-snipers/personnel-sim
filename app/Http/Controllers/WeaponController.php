@@ -18,14 +18,14 @@ class WeaponController extends Controller
         $weapons = Weapon::query();
 
         if ($search) {
-            $weapons->where('name', 'ilike', '%' . $search . '%');
+            $weapons->where('name', 'ilike', '%'.$search.'%');
         }
 
         if ($categoryFilter) {
-            $weapons->where('category', 'ilike', '%' . $categoryFilter . '%');
+            $weapons->where('category', 'ilike', '%'.$categoryFilter.'%');
         }
 
-        $weapons = $weapons->orderBy('name')->paginate($perPage);
+        $weapons = $weapons->withCount('personnels')->orderBy('name')->paginate($perPage);
 
         return Inertia::render('Master/Weapon/Index', [
             'weapons' => $weapons,
@@ -35,6 +35,13 @@ class WeaponController extends Controller
                 'perPage' => $perPage,
             ],
             'error' => session('error'),
+        ]);
+    }
+
+    public function show(Weapon $weapon)
+    {
+        return Inertia::render('Master/Weapon/Show', [
+            'weapon' => $weapon->loadCount('personnels'),
         ]);
     }
 

@@ -85,7 +85,6 @@
                 <th class="text-start">ID</th>
                 <th class="text-start">Name</th>
                 <th>Category</th>
-                <th>Description</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -94,14 +93,14 @@
                 <td class="text-start">{{ weapon.id }}</td>
                 <td class="text-start">{{ weapon.name }}</td>
                 <td>{{ weapon.category || '-' }}</td>
-                <td>{{ weapon.description || '-' }}</td>
                 <td>
+                  <Link :href="`/weapons/${weapon.id}`" class="btn btn-sm btn-outline-info me-2">View</Link>
                   <Link :href="`/weapons/${weapon.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
                   <button @click="deleteWeapon(weapon.id)" class="btn btn-sm btn-outline-danger">Delete</button>
                 </td>
               </tr>
               <tr v-if="weapons.data.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted">No weapons found.</td>
+                <td colspan="4" class="text-center py-4 text-muted">No weapons found.</td>
               </tr>
             </tbody>
           </table>

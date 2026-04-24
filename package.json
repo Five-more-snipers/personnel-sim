@@ -20,6 +20,8 @@
         "@vitejs/plugin-vue": "^6.0.6",
         "bootstrap": "^5.3.8",
         "bootstrap-icons": "^1.13.1",
+        "markdown-it": "^14.1.1",
+        "marked": "^18.0.2",
         "vue": "^3.5.32",
         "ziggy-js": "^2.6.2"
     }

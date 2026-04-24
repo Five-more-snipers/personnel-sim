@@ -28,6 +28,7 @@
                 <td class="text-start">{{ rank.name }}</td>
                 <td class="text-start">{{ rank.level }}</td>
                 <td>
+                  <Link :href="`/ranks/${rank.id}`" class="btn btn-sm btn-outline-info me-2">View</Link>
                   <Link :href="`/ranks/${rank.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
                   <button @click="deleteRank(rank.id)" class="btn btn-sm btn-outline-danger">Delete</button>
                 </td>

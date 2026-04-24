@@ -11,8 +11,15 @@ class UnitClassController extends Controller
     public function index()
     {
         return Inertia::render('Master/UnitClass/Index', [
-            'unitClasses' => UnitClass::all(),
+            'unitClasses' => UnitClass::withCount('personnels')->orderBy('name')->get(),
             'error' => session('error'),
+        ]);
+    }
+
+    public function show(UnitClass $unitClass)
+    {
+        return Inertia::render('Master/UnitClass/Show', [
+            'unitClass' => $unitClass->loadCount('personnels'),
         ]);
     }
 
@@ -23,7 +30,10 @@ class UnitClassController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
         UnitClass::create($validated);
 
         return redirect()->route('unit-classes.index');
@@ -36,7 +46,10 @@ class UnitClassController extends Controller
 
     public function update(Request $request, UnitClass $unitClass)
     {
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
         $unitClass->update($validated);
 
         return redirect()->route('unit-classes.index');
@@ -45,7 +58,7 @@ class UnitClassController extends Controller
     public function destroy(UnitClass $unitClass)
     {
         if ($unitClass->personnels()->exists()) {
-            return back()->with('error', 'Cannot delete this unit class because it is still being used by personnel.');
+            return redirect()->route('unit-classes.index')->with('error', 'Cannot delete this unit class because it is still being used by personnel.');
         }
         $unitClass->delete();
 

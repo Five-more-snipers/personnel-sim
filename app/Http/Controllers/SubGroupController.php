@@ -19,16 +19,16 @@ class SubGroupController extends Controller
         $subGroups = SubGroup::with('faction');
 
         if ($search) {
-            $subGroups->where('name', 'ilike', '%' . $search . '%');
+            $subGroups->where('name', 'ilike', '%'.$search.'%');
         }
 
         if ($factionFilter) {
             $subGroups->whereHas('faction', function ($q) use ($factionFilter) {
-                $q->where('name', 'ilike', '%' . $factionFilter . '%');
+                $q->where('name', 'ilike', '%'.$factionFilter.'%');
             });
         }
 
-        $subGroups = $subGroups->orderBy('name')->paginate($perPage);
+        $subGroups = $subGroups->withCount('personnels')->orderBy('name')->paginate($perPage);
 
         return Inertia::render('Master/SubGroup/Index', [
             'subGroups' => $subGroups,
@@ -38,6 +38,13 @@ class SubGroupController extends Controller
                 'perPage' => $perPage,
             ],
             'error' => session('error'),
+        ]);
+    }
+
+    public function show(SubGroup $subGroup)
+    {
+        return Inertia::render('Master/SubGroup/Show', [
+            'subGroup' => $subGroup->loadCount('personnels'),
         ]);
     }
 
@@ -53,6 +60,7 @@ class SubGroupController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'faction_id' => 'required|exists:factions,id',
+            'description' => 'nullable|string',
         ]);
 
         SubGroup::create($validated);
@@ -73,6 +81,7 @@ class SubGroupController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'faction_id' => 'required|exists:factions,id',
+            'description' => 'nullable|string',
         ]);
 
         $subGroup->update($validated);

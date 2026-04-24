@@ -11,6 +11,10 @@ class Weapon extends Model
 
     protected $fillable = ['name', 'category', 'description'];
 
+    protected $casts = [
+        'description' => 'string',
+    ];
+
     public function personnels()
     {
         return $this->hasMany(Personnel::class);

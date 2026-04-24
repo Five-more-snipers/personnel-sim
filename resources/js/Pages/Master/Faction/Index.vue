@@ -63,6 +63,7 @@ const deleteFaction = (id) => {
                 <td class="text-start">{{ faction.id }}</td>
                 <td class="text-start">{{ faction.name }}</td>
                 <td>
+                  <Link :href="`/factions/${faction.id}`" class="btn btn-sm btn-outline-info me-2">View</Link>
                   <Link :href="`/factions/${faction.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
                   <button @click="deleteFaction(faction.id)" class="btn btn-sm btn-outline-danger">Delete</button>
                 </td>
