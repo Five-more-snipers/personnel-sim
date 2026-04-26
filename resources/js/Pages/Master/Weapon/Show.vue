@@ -15,17 +15,20 @@
                 </Link>
               </div>
             </div>
-            <div class="card-body">
-              <div class="mb-3">
-                <strong>Category:</strong> {{ weapon.category || '-' }}
-              </div>
-              <div v-if="weapon.description" class="biography-content" v-html="renderedDescription">
-              </div>
-              <div v-else class="text-center text-muted py-5">
-                <i class="bi bi-file-text display-4"></i>
-                <p class="mt-2">No description yet.</p>
-              </div>
-            </div>
+             <div class="card-body">
+               <div class="mb-3">
+                 <strong>Category:</strong> {{ weapon.category || '-' }}
+               </div>
+               <div class="mb-3">
+                 <strong>Inspiration/Source:</strong> {{ weapon.inspiration_source || '-' }}
+               </div>
+               <div v-if="weapon.description" class="biography-content" v-html="renderedDescription">
+               </div>
+               <div v-else class="text-center text-muted py-5">
+                 <i class="bi bi-file-text display-4"></i>
+                 <p class="mt-2">No description yet.</p>
+               </div>
+             </div>
           </div>
         </div>
         <div class="col-md-4">

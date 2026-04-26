@@ -80,25 +80,27 @@
       <div class="card shadow-sm border-0">
         <div class="card-body p-0">
           <table class="table table-hover table-striped mb-0 text-center align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th class="text-start">ID</th>
-                <th class="text-start">Name</th>
-                <th>Category</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+             <thead class="table-dark">
+               <tr>
+                 <th class="text-start">ID</th>
+                 <th class="text-start">Name</th>
+                 <th>Category</th>
+                 <th>Inspiration/Source</th>
+                 <th>Actions</th>
+               </tr>
+             </thead>
             <tbody>
-              <tr v-for="weapon in weapons.data" :key="weapon.id">
-                <td class="text-start">{{ weapon.id }}</td>
-                <td class="text-start">{{ weapon.name }}</td>
-                <td>{{ weapon.category || '-' }}</td>
-                <td>
-                  <Link :href="`/weapons/${weapon.id}`" class="btn btn-sm btn-outline-info me-2">View</Link>
-                  <Link :href="`/weapons/${weapon.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
-                  <button @click="deleteWeapon(weapon.id)" class="btn btn-sm btn-outline-danger">Delete</button>
-                </td>
-              </tr>
+               <tr v-for="weapon in weapons.data" :key="weapon.id">
+                 <td class="text-start">{{ weapon.id }}</td>
+                 <td class="text-start">{{ weapon.name }}</td>
+                 <td>{{ weapon.category || '-' }}</td>
+                 <td>{{ weapon.inspiration_source || '-' }}</td>
+                 <td>
+                   <Link :href="`/weapons/${weapon.id}`" class="btn btn-sm btn-outline-info me-2">View</Link>
+                   <Link :href="`/weapons/${weapon.id}/edit`" class="btn btn-sm btn-outline-secondary me-2">Edit</Link>
+                   <button @click="deleteWeapon(weapon.id)" class="btn btn-sm btn-outline-danger">Delete</button>
+                 </td>
+               </tr>
               <tr v-if="weapons.data.length === 0">
                 <td colspan="4" class="text-center py-4 text-muted">No weapons found.</td>
               </tr>

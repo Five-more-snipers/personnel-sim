@@ -90,10 +90,12 @@ const renderedBiography = computed(() => {
                                      <span class="text-muted">Unit Class</span>
                                      <span class="fw-bold">{{ personnel.unit_class?.name }}</span>
                                  </li>
-                                 <li class="list-group-item d-flex justify-content-between">
-                                     <span class="text-muted">Primary Weapon</span>
-                                     <span class="fw-bold">{{ personnel.weapon?.name }}</span>
-                                 </li>
+                                  <li class="list-group-item d-flex justify-content-between">
+                                      <span class="text-muted">Primary Weapon</span>
+                                      <span class="fw-bold">
+                                        {{ personnel.weapon?.name }} {{ personnel.weapon?.inspiration_source ? '[' + personnel.weapon?.inspiration_source + ']' : '' }}
+                                      </span>
+                                  </li>
                              </ul>
                          </div>
                          <div class="card-footer d-flex gap-2">

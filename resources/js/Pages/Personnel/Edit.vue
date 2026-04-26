@@ -124,14 +124,14 @@ watch(() => form.faction_id, () => {
                                         </select>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold">Primary Weapon</label>
-                                        <select v-model="form.weapon_id" class="form-select" required>
-                                            <option v-for="weapon in weapons" :key="weapon.id" :value="weapon.id">
-                                                {{ weapon.name }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                     <div class="col-md-6">
+                                         <label class="form-label fw-bold">Primary Weapon</label>
+                                         <select v-model="form.weapon_id" class="form-select" required>
+                                             <option v-for="weapon in weapons" :key="weapon.id" :value="weapon.id">
+                                               {{ weapon.name }} {{ weapon.inspiration_source ? '(' + weapon.inspiration_source + ')' : '' }}
+                                             </option>
+                                         </select>
+                                     </div>
                                 </div>
 
                                 <div class="mb-4">
@@ -203,18 +203,18 @@ watch(() => form.faction_id, () => {
                                         </button>
                                     </div>
                                     
-                                    <textarea 
+                                     <textarea 
                                         v-if="!showPreview"
                                         id="biography-textarea"
                                         v-model="form.biography" 
-                                        class="form-control" 
-                                        rows="10" 
+                                        class="form-control form-control-lg" 
+                                        rows="12" 
                                         placeholder="Enter personnel biography in Markdown..."></textarea>
-                                    
+                                     
                                     <div 
                                         v-else
                                         class="border p-3 rounded bg-white" 
-                                        style="min-height: 250px;"
+                                        style="min-height: 280px;"
                                         v-html="previewBiography">
                                     </div>
                                 </div>

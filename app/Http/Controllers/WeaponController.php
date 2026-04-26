@@ -55,6 +55,7 @@ class WeaponController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:255',
+            'inspiration_source' => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ]);
 
@@ -73,6 +74,7 @@ class WeaponController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:255',
+            'inspiration_source' => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ]);
 

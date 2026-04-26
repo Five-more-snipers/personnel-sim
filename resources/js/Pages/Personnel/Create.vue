@@ -124,15 +124,15 @@ watch(() => form.faction_id, () => {
                                         </select>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold">Primary Weapon</label>
-                                        <select v-model="form.weapon_id" class="form-select" required>
-                                            <option disabled value="">Select Weapon...</option>
-                                            <option v-for="weapon in weapons" :key="weapon.id" :value="weapon.id">
-                                                {{ weapon.name }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                     <div class="col-md-6">
+                                         <label class="form-label fw-bold">Primary Weapon</label>
+                                         <select v-model="form.weapon_id" class="form-select" required>
+                                             <option disabled value="">Select Weapon...</option>
+                                             <option v-for="weapon in weapons" :key="weapon.id" :value="weapon.id">
+                                               {{ weapon.name }} {{ weapon.inspiration_source ? '(' + weapon.inspiration_source + ')' : '' }}
+                                             </option>
+                                         </select>
+                                     </div>
                                 </div>
 
                                 <div class="mb-4">

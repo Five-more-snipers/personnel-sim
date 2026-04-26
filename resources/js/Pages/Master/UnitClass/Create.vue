@@ -1,68 +1,78 @@
 <template>
   <AppLayout>
-    <div class="container">
-      <h2 class="fw-bold mb-4">Create Unit Class</h2>
-      <form @submit.prevent="submit" class="card shadow-sm border-0 p-4" style="max-width: 600px;">
-        <div class="mb-3">
-          <label class="form-label">Name</label>
-          <input v-model="form.name" type="text" class="form-control" required />
-        </div>
-        
-        <div class="mb-3">
-          <label class="form-label">Description (Markdown supported)</label>
-          <div class="mb-2 d-flex gap-2 align-items-center">
-            <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-secondary" @click="insertFormat('**', '**', 'bold text')">
-                <strong>B</strong>
-              </button>
-              <button type="button" class="btn btn-outline-secondary" @click="insertFormat('*', '*', 'italic text')">
-                <em>I</em>
-              </button>
-              <button type="button" class="btn btn-outline-secondary" @click="insertFormat('~~', '~~', 'strikethrough')">
-                <s>S</s>
-              </button>
-              <button type="button" class="btn btn-outline-secondary" @click="addHeading(1)">
-                H1
-              </button>
-              <button type="button" class="btn btn-outline-secondary" @click="addHeading(2)">
-                H2
-              </button>
-              <button type="button" class="btn btn-outline-secondary" @click="insertFormat('\n- ', '', 'list item')">
-                <i class="bi bi-list-ul"></i>
-              </button>
-              <button type="button" class="btn btn-outline-secondary" @click="insertFormat('[', '](url)', 'link text')">
-                <i class="bi bi-link"></i>
-              </button>
-              <button type="button" class="btn btn-outline-secondary" @click="insertFormat('`', '`', 'code')">
-                &lt;/&gt;
-              </button>
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white">
+              <h4 class="mb-0">Create Unit Class</h4>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary" @click="showPreview = !showPreview">
-              {{ showPreview ? 'Edit' : 'Preview' }}
-            </button>
-          </div>
-          
-          <textarea 
-            v-if="!showPreview"
-            id="description-textarea"
-            v-model="form.description" 
-            class="form-control" 
-            rows="10" 
-            placeholder="Enter unit class description in Markdown..."></textarea>
-          
-          <div 
-            v-else
-            class="border p-3 rounded bg-white" 
-            style="min-height: 250px;"
-            v-html="previewDescription">
+            <div class="card-body bg-light">
+              <form @submit.prevent="submit">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Name</label>
+                  <input v-model="form.name" type="text" class="form-control form-control-lg" required />
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Description (Markdown supported)</label>
+                  <div class="mb-2 d-flex gap-2 align-items-center">
+                    <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-outline-secondary" @click="insertFormat('**', '**', 'bold text')">
+                        <strong>B</strong>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" @click="insertFormat('*', '*', 'italic text')">
+                        <em>I</em>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" @click="insertFormat('~~', '~~', 'strikethrough')">
+                        <s>S</s>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" @click="addHeading(1)">
+                        H1
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" @click="addHeading(2)">
+                        H2
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" @click="insertFormat('\n- ', '', 'list item')">
+                        <i class="bi bi-list-ul"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" @click="insertFormat('[', '](url)', 'link text')">
+                        <i class="bi bi-link"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" @click="insertFormat('`', '`', 'code')">
+                        &lt;/&gt;
+                      </button>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @click="showPreview = !showPreview">
+                      {{ showPreview ? 'Edit' : 'Preview' }}
+                    </button>
+                  </div>
+                  
+                  <textarea 
+                    v-if="!showPreview"
+                    id="description-textarea"
+                    v-model="form.description" 
+                    class="form-control form-control-lg" 
+                    rows="12" 
+                    placeholder="Enter unit class description in Markdown..."></textarea>
+                  
+                  <div 
+                    v-else
+                    class="border p-3 rounded bg-white" 
+                    style="min-height: 280px;"
+                    v-html="previewDescription">
+                  </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                  <Link href="/unit-classes" class="btn btn-secondary btn-lg">Cancel</Link>
+                  <button type="submit" class="btn btn-primary btn-lg" :disabled="form.processing">Save Unit Class</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-        
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary" :disabled="form.processing">Save</button>
-          <Link href="/unit-classes" class="btn btn-secondary">Cancel</Link>
-        </div>
-      </form>
+      </div>
     </div>
   </AppLayout>
 </template>

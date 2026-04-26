@@ -9,10 +9,11 @@ class Weapon extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'description'];
+    protected $fillable = ['name', 'category', 'inspiration_source', 'description'];
 
     protected $casts = [
         'description' => 'string',
+        'inspiration_source' => 'string',
     ];
 
     public function personnels()
